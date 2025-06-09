@@ -525,197 +525,179 @@ $conn->close();
         </div>
         
         <div class="main-content">
-        <!-- Contenido principal a la izquierda -->
-        <div class="content">
-            <div class="card">
-                <!-- Configuración de Contraseña -->
-                <div class="settings-section">
-                    <h2>Configuración de Contraseña</h2>
-                    <form action="cambiar_contraseña.php" method="POST">
-                        <div class="form-group">
-                            <label for="current-pass">Contraseña Actual</label>
-                            <input type="password" id="current-pass" name="current_pass" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="new-pass">Nueva Contraseña</label>
-                            <input type="password" id="new-pass" name="new_pass" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="confirm-pass">Confirmar Nueva Contraseña</label>
-                            <input type="password" id="confirm-pass" name="confirm_pass" required>
-                        </div>
-                        <button class="btn btn-save" type="submit">Guardar Cambios</button>
-                    </form>
-                </div>
+            <!-- Contenido principal a la izquierda -->
+            <div class="content">
+                <div class="card">
+                    <!-- Aquí quitamos la Configuración de Contraseña -->
 
-                <!-- Selección de Cursos -->
-                <div class="course-list">
-                    <h3>Selección de Cursos</h3>
-                    <?php
-                    if (session_status() === PHP_SESSION_NONE) {
-                        session_start();
-                    }
-                    $usuario = $_SESSION['usuario'];
-
-                    $conn = new mysqli('localhost', 'root', '', 'login_a');
-                    if ($conn->connect_error) {
-                        die("Error de conexión: " . $conn->connect_error);
-                    }
-
-                    $cursos_seleccionados = [];
-                    $stmt = $conn->prepare("SELECT id_curso FROM cursos_usuario WHERE usuario = ?");
-                    $stmt->bind_param("s", $usuario);
-                    $stmt->execute();
-                    $resultSeleccionados = $stmt->get_result();
-                    while ($row = $resultSeleccionados->fetch_assoc()) {
-                        $cursos_seleccionados[] = $row['id_curso'];
-                    }
-                    $stmt->close();
-
-                    if (count($cursos_seleccionados) > 0) {
-                        echo "<div class='selected-courses'>";
-                        echo "<h4>🎓 Estos son los cursos que has seleccionado:</h4>";
-                        echo "<ul class='selected-course-list'>";
-                        $sql_mostrar = "SELECT nombre_curso FROM cursos WHERE id_curso IN (" . implode(',', array_map('intval', $cursos_seleccionados)) . ")";
-                        $result_mostrar = $conn->query($sql_mostrar);
-                        while ($row = $result_mostrar->fetch_assoc()) {
-                            echo "<li>" . htmlspecialchars($row['nombre_curso']) . "</li>";
+                    <!-- Selección de Cursos -->
+                    <div class="course-list">
+                        <h3>Selección de Cursos</h3>
+                        <?php
+                        if (session_status() === PHP_SESSION_NONE) {
+                            session_start();
                         }
-                        echo "</ul></div>";
-                    } else {
-                        echo '<p>Selecciona los cursos que deseas ver cada vez que inicies sesión:</p>';
-                        $sql = "SELECT id_curso, nombre_curso, descripcion FROM cursos";
-                        $result = $conn->query($sql);
-                    ?>
-                        <form method="POST" action="guardar_cursos.php">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Curso</th>
-                                        <th>Seleccionar</th>
-                                        <th>Descripción</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php while ($row = $result->fetch_assoc()) : ?>
-                                        <tr>
-                                            <td><?php echo htmlspecialchars($row['nombre_curso']); ?></td>
-                                            <td class="course-select">
-                                                <input type="checkbox" name="cursos_seleccionados[]" value="<?php echo $row['id_curso']; ?>" id="curso_<?php echo $row['id_curso']; ?>">
-                                                <label for="curso_<?php echo $row['id_curso']; ?>">Mostrar al iniciar</label>
-                                            </td>
-                                            <td>
-                                                <button type="button" onclick="toggleDescripcion(<?php echo $row['id_curso']; ?>)">Ver</button>
-                                            </td>
-                                        </tr>
-                                        <tr id="descripcion_<?php echo $row['id_curso']; ?>" style="display: none;">
-                                            <td colspan="3"><?php echo nl2br(htmlspecialchars($row['descripcion'])); ?></td>
-                                        </tr>
-                                    <?php endwhile; ?>
-                                </tbody>
-                            </table>
-                            <br>
-                            <button type="submit" class="btn btn-save">Guardar Selección</button>
-                        </form>
-                        <script>
-                            function toggleDescripcion(id) {
-                                const desc = document.getElementById("descripcion_" + id);
-                                desc.style.display = desc.style.display === "none" ? "table-row" : "none";
+                        $usuario = $_SESSION['usuario'];
+
+                        $conn = new mysqli('localhost', 'root', '', 'login_a');
+                        if ($conn->connect_error) {
+                            die("Error de conexión: " . $conn->connect_error);
+                        }
+
+                        $cursos_seleccionados = [];
+                        $stmt = $conn->prepare("SELECT id_curso FROM cursos_usuario WHERE usuario = ?");
+                        $stmt->bind_param("s", $usuario);
+                        $stmt->execute();
+                        $resultSeleccionados = $stmt->get_result();
+                        while ($row = $resultSeleccionados->fetch_assoc()) {
+                            $cursos_seleccionados[] = $row['id_curso'];
+                        }
+                        $stmt->close();
+
+                        if (count($cursos_seleccionados) > 0) {
+                            echo "<div class='selected-courses'>";
+                            echo "<h4>🎓 Estos son los cursos que has seleccionado:</h4>";
+                            echo "<ul class='selected-course-list'>";
+                            $sql_mostrar = "SELECT nombre_curso FROM cursos WHERE id_curso IN (" . implode(',', array_map('intval', $cursos_seleccionados)) . ")";
+                            $result_mostrar = $conn->query($sql_mostrar);
+                            while ($row = $result_mostrar->fetch_assoc()) {
+                                echo "<li>" . htmlspecialchars($row['nombre_curso']) . "</li>";
                             }
-                            document.querySelectorAll('input[type="checkbox"][name="cursos_seleccionados[]"]').forEach(cb => {
-                                cb.addEventListener('change', function () {
-                                    const seleccionados = document.querySelectorAll('input[type="checkbox"][name="cursos_seleccionados[]"]:checked');
-                                    if (seleccionados.length > 3) {
-                                        alert("Solo puedes seleccionar hasta 3 cursos.");
-                                        this.checked = false;
-                                    }
+                            echo "</ul></div>";
+                        } else {
+                            echo '<p>Selecciona los cursos que deseas ver cada vez que inicies sesión:</p>';
+                            $sql = "SELECT id_curso, nombre_curso, descripcion FROM cursos";
+                            $result = $conn->query($sql);
+                        ?>
+                            <form method="POST" action="guardar_cursos.php">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Curso</th>
+                                            <th>Seleccionar</th>
+                                            <th>Descripción</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php while ($row = $result->fetch_assoc()) : ?>
+                                            <tr>
+                                                <td><?php echo htmlspecialchars($row['nombre_curso']); ?></td>
+                                                <td class="course-select">
+                                                    <input type="checkbox" name="cursos_seleccionados[]" value="<?php echo $row['id_curso']; ?>" id="curso_<?php echo $row['id_curso']; ?>">
+                                                    <label for="curso_<?php echo $row['id_curso']; ?>">Mostrar al iniciar</label>
+                                                </td>
+                                                <td>
+                                                    <button type="button" onclick="toggleDescripcion(<?php echo $row['id_curso']; ?>)">Ver</button>
+                                                </td>
+                                            </tr>
+                                            <tr id="descripcion_<?php echo $row['id_curso']; ?>" style="display: none;">
+                                                <td colspan="3"><?php echo nl2br(htmlspecialchars($row['descripcion'])); ?></td>
+                                            </tr>
+                                        <?php endwhile; ?>
+                                    </tbody>
+                                </table>
+                                <br>
+                                <button type="submit" class="btn btn-save">Guardar Selección</button>
+                            </form>
+                            <script>
+                                function toggleDescripcion(id) {
+                                    const desc = document.getElementById("descripcion_" + id);
+                                    desc.style.display = desc.style.display === "none" ? "table-row" : "none";
+                                }
+                                document.querySelectorAll('input[type="checkbox"][name="cursos_seleccionados[]"]').forEach(cb => {
+                                    cb.addEventListener('change', function () {
+                                        const seleccionados = document.querySelectorAll('input[type="checkbox"][name="cursos_seleccionados[]"]:checked');
+                                        if (seleccionados.length > 3) {
+                                            alert("Solo puedes seleccionar hasta 3 cursos.");
+                                            this.checked = false;
+                                        }
+                                    });
                                 });
-                            });
-                        </script>
-                    <?php } $conn->close(); ?>
-                </div>
-
-                <!-- Información importante -->
-                <div class="info-card">
-                    <h3>Información Importante</h3>
-                    <p>Se debe seleccionar los cursos para mostrarse cada vez que inicie sesión.</p>
-                    <ul>
-                        <li>Selecciona tus cursos favoritos para acceso rápido</li>
-                        <li>Actualiza tu contraseña regularmente para mayor seguridad</li>
-                        <li>Tu progreso se guarda automáticamente al salir</li>
-                        <li>Personaliza tu experiencia de aprendizaje</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <!-- Barra lateral (Sidebar) a la derecha -->
-        <div class="sidebar">
-            <div class="card">
-                <div class="user-profile">
-                    <div class="user-avatar" style="background-image: url('logo.png');"></div>
-                    <div class="user-name">
-                        <?php echo htmlspecialchars($_SESSION['usuario'] ?? 'Usuario'); ?>
+                            </script>
+                        <?php } $conn->close(); ?>
                     </div>
-                    <div class="user-role">Estudiante</div>
-                    <?php date_default_timezone_set('America/Lima'); ?>
-                    <p>Último acceso: Hoy, <?php echo date("h:i A"); ?></p>
-                </div>
 
-                <div class="stats">
-                    <?php
-                    if (session_status() === PHP_SESSION_NONE) {
-                        session_start();
-                    }
-                    $usuario = $_SESSION['usuario'];
-                    $conn = new mysqli('localhost', 'root', '', 'login_a');
-                    if ($conn->connect_error) {
-                        die("Error de conexión: " . $conn->connect_error);
-                    }
-
-                    // Cursos activos
-                    $stmt = $conn->prepare("SELECT COUNT(*) AS total FROM cursos_usuario WHERE usuario = ?");
-                    $stmt->bind_param("s", $usuario);
-                    $stmt->execute();
-                    $result = $stmt->get_result();
-                    $row = $result->fetch_assoc();
-                    $total_cursos = $row['total'];
-                    $stmt->close();
-
-                    // Datos de usuario
-                    $stmt = $conn->prepare("SELECT nombre, usuario FROM usuarios WHERE usuario = ?");
-                    $stmt->bind_param("s", $usuario);
-                    $stmt->execute();
-                    $result = $stmt->get_result();
-                    $datos = $result->fetch_assoc();
-                    $stmt->close();
-
-                    $conn->close();
-                    ?>
-
-                    <div class="stat-card">
-                        <h4>Cursos Activos:</h4>
-                        <p><?php echo $total_cursos; ?></p>
-                    </div>
-                    <div class="stat-card">
-                        <h4>Nombre:</h4>
-                        <p><?php echo htmlspecialchars($datos['nombre']); ?></p>
-                    </div>
-                    <div class="stat-card">
-                        <h4>Usuario:</h4>
-                        <p><?php echo htmlspecialchars($datos['usuario']); ?></p>
-                    </div>
-                    <div class="stat-card">
-                        <h4>Tareas:</h4>
-                        <a href="ver_tareas.php" class="enlace-tarjeta">
-                            <p>Ver tareas pendientes</p>
-                        </a>
+                    <!-- Información importante -->
+                    <div class="info-card">
+                        <h3>Información Importante</h3>
+                        <p>Se debe seleccionar los cursos para mostrarse cada vez que inicie sesión.</p>
+                        <ul>
+                            <li>Selecciona tus cursos favoritos para acceso rápido</li>
+                            <li>Actualiza tu contraseña regularmente para mayor seguridad</li>
+                            <li>Tu progreso se guarda automáticamente al salir</li>
+                            <li>Personaliza tu experiencia de aprendizaje</li>
+                        </ul>
                     </div>
                 </div>
             </div>
+
+            <!-- Barra lateral (Sidebar) a la derecha -->
+            <div class="sidebar">
+                <div class="card">
+                    <div class="user-profile">
+                        <div class="user-avatar" style="background-image: url('logo.png');"></div>
+                        <div class="user-name">
+                            <?php echo htmlspecialchars($_SESSION['usuario'] ?? 'Usuario'); ?>
+                        </div>
+                        <div class="user-role">Estudiante</div>
+                        <?php date_default_timezone_set('America/Lima'); ?>
+                        <p>Último acceso: Hoy, <?php echo date("h:i A"); ?></p>
+                    </div>
+
+                    <div class="stats">
+                        <?php
+                        if (session_status() === PHP_SESSION_NONE) {
+                            session_start();
+                        }
+                        $usuario = $_SESSION['usuario'];
+                        $conn = new mysqli('localhost', 'root', '', 'login_a');
+                        if ($conn->connect_error) {
+                            die("Error de conexión: " . $conn->connect_error);
+                        }
+
+                        // Cursos activos
+                        $stmt = $conn->prepare("SELECT COUNT(*) AS total FROM cursos_usuario WHERE usuario = ?");
+                        $stmt->bind_param("s", $usuario);
+                        $stmt->execute();
+                        $result = $stmt->get_result();
+                        $row = $result->fetch_assoc();
+                        $total_cursos = $row['total'];
+                        $stmt->close();
+
+                        // Datos de usuario
+                        $stmt = $conn->prepare("SELECT nombre, usuario FROM usuarios WHERE usuario = ?");
+                        $stmt->bind_param("s", $usuario);
+                        $stmt->execute();
+                        $result = $stmt->get_result();
+                        $datos = $result->fetch_assoc();
+                        $stmt->close();
+
+                        $conn->close();
+                        ?>
+
+                        <div class="stat-card">
+                            <h4>Cursos Activos:</h4>
+                            <p><?php echo $total_cursos; ?></p>
+                        </div>
+                        <div class="stat-card">
+                            <h4>Nombre:</h4>
+                            <p><?php echo htmlspecialchars($datos['nombre']); ?></p>
+                        </div>
+                        <div class="stat-card">
+                            <h4>Usuario:</h4>
+                            <p><?php echo htmlspecialchars($datos['usuario']); ?></p>
+                        </div>
+                        <div class="stat-card">
+                            <h4>Tareas:</h4>
+                            <a href="ver_tareas.php" class="enlace-tarjeta">
+                                <p>Ver tareas pendientes</p>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
-        
+            
         <footer>
             <p>Sistema Educativo Senati &copy; 2025 - Todos los derechos reservados a jhon-fer</p>
         </footer>
@@ -724,11 +706,6 @@ $conn->close();
     <script>
         // Basic functionality for the page
         document.addEventListener('DOMContentLoaded', function() {
-            // Password change button
-            document.querySelector('.btn-newpass')?.addEventListener('click', function() {
-                alert('Función de cambio de contraseña activada. Complete los campos para actualizar.');
-            });
-            
             // Save button
             document.querySelector('.btn-save')?.addEventListener('click', function() {
                 alert('Configuración guardada exitosamente!');
@@ -738,10 +715,11 @@ $conn->close();
             document.querySelector('.btn-logout')?.addEventListener('click', function() {
                 if(confirm('¿Está seguro que desea salir del sistema?')) {
                     alert('Sesión finalizada. ¡Hasta pronto!');
-                    // In a real app, this would redirect to login page
+                    // En una app real redirigiría a la página de login
                 }
             });
         });
     </script>
 </body>
+
 </html>

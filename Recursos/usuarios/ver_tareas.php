@@ -8,14 +8,13 @@ if (!isset($_SESSION['usuario'])) {
 
 // Conexión a la base de datos
 $conn = new mysqli("localhost", "root", "", "login_a");
-
 if ($conn->connect_error) {
     die("Conexión fallida: " . $conn->connect_error);
 }
 
 $usuario = $_SESSION['usuario'];
 
-// Obtener el ID real del usuario
+// Obtener el ID del usuario
 $stmt_id = $conn->prepare("SELECT id FROM usuarios WHERE usuario = ?");
 $stmt_id->bind_param("s", $usuario);
 $stmt_id->execute();
@@ -24,12 +23,10 @@ $usuario_data = $result_id->fetch_assoc();
 $usuario_id = $usuario_data['id'];
 $stmt_id->close();
 
-
-// Si se envió el formulario para marcar tarea como terminada
+// Marcar tarea como terminada
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id_tarea'])) {
     $id_tarea = intval($_POST['id_tarea']);
 
-    // Verificar si ya fue marcada como terminada
     $check = $conn->prepare("SELECT 1 FROM tareas_terminadas WHERE usuario_id = ? AND id_tarea = ?");
     $check->bind_param("ii", $usuario_id, $id_tarea);
     $check->execute();
@@ -44,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id_tarea'])) {
     $check->close();
 }
 
-// Obtener los cursos seleccionados por el usuario
+// Obtener cursos del usuario
 $sql_cursos = "SELECT id_curso FROM cursos_usuario WHERE usuario = ?";
 $stmt_cursos = $conn->prepare($sql_cursos);
 $stmt_cursos->bind_param("s", $usuario);
@@ -57,12 +54,11 @@ while ($row = $result_cursos->fetch_assoc()) {
 }
 $stmt_cursos->close();
 
+// Obtener tareas
 $tareas = [];
-
 if (!empty($cursos_ids)) {
     $placeholders = implode(',', array_fill(0, count($cursos_ids), '?'));
     $types = str_repeat('i', count($cursos_ids));
-
     $sql_tareas = "
         SELECT t.*, c.nombre_curso, 
             IF(tt.id IS NULL, 0, 1) AS terminada
@@ -72,7 +68,6 @@ if (!empty($cursos_ids)) {
         WHERE t.id_curso IN ($placeholders)
         ORDER BY t.fecha_entrega ASC
     ";
-
     $stmt_tareas = $conn->prepare($sql_tareas);
     $params = array_merge([$usuario_id], $cursos_ids);
     $stmt_tareas->bind_param("i" . $types, ...$params);
@@ -132,7 +127,7 @@ $conn->close();
         }
         .volver {
             display: block;
-            margin: 20px auto;
+            margin: 10px auto;
             text-align: center;
             text-decoration: none;
             background-color: #1a2a6c;
@@ -140,6 +135,13 @@ $conn->close();
             padding: 10px 20px;
             border-radius: 6px;
             width: fit-content;
+        }
+        .descargar {
+            background-color: #dc3545;
+            transition: background-color 0.3s ease;
+        }
+        .descargar:hover {
+            background-color: #c82333;
         }
         button {
             background-color: #28a745;
@@ -190,10 +192,15 @@ $conn->close();
                 <?php endforeach; ?>
             </tbody>
         </table>
+
+        <!-- Botón para descargar PDF -->
+        <a href="descargar_pdf.php" class="volver descargar">📄 Descargar PDF</a>
+
     <?php else: ?>
         <p class="no-tareas">No hay tareas pendientes para tus cursos seleccionados.</p>
     <?php endif; ?>
 
+    <!-- Botón para volver -->
     <a href="index.php" class="volver">← Volver al Panel</a>
 </body>
 </html>
